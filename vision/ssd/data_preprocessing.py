@@ -11,15 +11,15 @@ class TrainAugmentation:
         self.mean = mean
         self.size = size
         self.augment = Compose([
-            ConvertFromInts(),
-            PhotometricDistort(),
-            Expand(self.mean),
-            RandomSampleCrop(),
-            RandomMirror(),
-            ToPercentCoords(),
-            Resize(self.size),
-            SubtractMeans(self.mean),
-            lambda img, boxes=None, labels=None: (img / std, boxes, labels),
+            # ConvertFromInts(),
+            # PhotometricDistort(),
+            # Expand(self.mean),
+            # RandomSampleCrop(),
+            # RandomMirror(),
+            # ToPercentCoords(),
+            # Resize(self.size),
+            # SubtractMeans(self.mean),
+            # lambda img, boxes=None, labels=None: (img / std, boxes, labels),
             ToTensor(),
         ])
 
@@ -31,16 +31,18 @@ class TrainAugmentation:
             boxes: boundding boxes in the form of (x1, y1, x2, y2).
             labels: labels of boxes.
         """
+        # RBG -> BGR
+        img = img[:, :, (2, 1, 0)]
         return self.augment(img, boxes, labels)
 
 
 class TestTransform:
     def __init__(self, size, mean=0.0, std=1.0):
         self.transform = Compose([
-            ToPercentCoords(),
-            Resize(size),
-            SubtractMeans(mean),
-            lambda img, boxes=None, labels=None: (img / std, boxes, labels),
+            # ToPercentCoords(),
+            # Resize(size),
+            # SubtractMeans(mean),
+            # lambda img, boxes=None, labels=None: (img / std, boxes, labels),
             ToTensor(),
         ])
 
@@ -51,9 +53,9 @@ class TestTransform:
 class PredictionTransform:
     def __init__(self, size, mean=0.0, std=1.0):
         self.transform = Compose([
-            Resize(size),
-            SubtractMeans(mean),
-            lambda img, boxes=None, labels=None: (img / std, boxes, labels),
+            # Resize(size),
+            # SubtractMeans(mean),
+            # lambda img, boxes=None, labels=None: (img / std, boxes, labels),
             ToTensor()
         ])
 

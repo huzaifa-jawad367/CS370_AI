@@ -8,6 +8,12 @@ import xml.etree.ElementTree as ET
 
 from PIL import Image
 
+# import box_utils.py from vision/utils
+from ..utils import box_utils
+
+################################# My Code ####################################
+from ..transforms.transforms import ToTensor
+################################# My Code ####################################
 
 class VOCDataset(torch.utils.data.Dataset):
     """
@@ -88,11 +94,71 @@ class VOCDataset(torch.utils.data.Dataset):
             logging.debug(f"voc_dataset image_id={image_id}" + ' \n    boxes=' + str(boxes) + ' \n    labels=' + str(labels))
 
         image = self._read_image(image_id)
+
+        # print(f"Boxes before transformation: {boxes}")
+
+        # ################################# My Code ####################################
+        # # Apply ToTensor transform on image
+        # to_tensor_transform = ToTensor()
+        # image, boxes, labels = to_tensor_transform(image)
+        import cv2 as cv
+        import os
+
+        # print(f"Image: {image.shape}")
+        # list_of_files = len(os.listdir('test_results'))
+        # cv.imwrite(f'test_results/{list_of_files}.jpg', image)
+
+        # cv.imwrite('test_results/test.jpg', image)
+
+        # ################################# My Code ####################################
+
+        # ################################ CHECKPOINT ####################################
+        # Image ok for now except for the BGR to RGB conversion
+        # ################################ CHECKPOINT ####################################
         
         if self.transform:
             image, boxes, labels = self.transform(image, boxes, labels)
         if self.target_transform:
             boxes, labels = self.target_transform(boxes, labels)
+
+        # ################################# My Code ####################################
+
+        # print(f"Boxes after transformation: {boxes}")
+
+        # print(image.shape)
+        image_cv = np.asarray(image)
+        # print(f"Image CV: {image_cv.shape}")
+
+        # resize Image CV from (3, 300, 300) to (300, 300, 3) using np
+        image_cv = np.transpose(image_cv, (1, 2, 0))        
+
+        # print(f"Image CV reshaped: {image_cv.shape}")
+
+        # list_of_files = len(os.listdir('test_results'))
+        # cv.imwrite(f'test_results/{list_of_files}.jpg', image_cv)
+
+        # count the number of each label
+        unique, counts = np.unique(labels, return_counts=True)
+        # print(dict(zip(unique, counts)))
+
+        # # draw boxes on image_cv
+        # for i in range(len(boxes)):
+        #     box = boxes[i]
+        #     label = labels[i]
+        #     if label == 1:
+        #         color = (255, 0, 0)
+        #         # draw box
+        #         # cv.rectangle(image_cv, (box[0], box[1]), (box[2], box[3]), color, 2)
+        #         print(f"Box: {box}")
+                
+        #         # convert box regression to box coordinates
+        #         box2 = box_utils.convert_locations_to_boxes(box, self.center_form_priors, 0.1, 0.2)
+        #         print(f"Box2: {box2}")
+                
+            
+        # cv.imwrite(f'test_results/{list_of_files}.jpg', image_cv) 
+
+        # ################################# My Code ####################################
             
         return image, boxes, labels
 
@@ -166,7 +232,7 @@ class VOCDataset(torch.utils.data.Dataset):
                 is_difficult.append(int(is_difficult_str) if is_difficult_str else 0)
             else:
                 print(f"warning - image {image_id} has object with unknown class '{class_name}'")
-
+    
         return (np.array(boxes, dtype=np.float32),
                 np.array(labels, dtype=np.int64),
                 np.array(is_difficult, dtype=np.uint8))
